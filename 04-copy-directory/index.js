@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const srcPath = path.join(__dirname, 'files');
 const copyPath = path.join(__dirname, 'files-copy');
+fs.mkdir(copyPath, err => err);
 const { readdir } = require('fs/promises');
 
 async function removeFiles() {
@@ -24,8 +25,8 @@ async function addFiles() {
     const files = await readdir(srcPath, { withFileTypes: true });
     files.forEach(it => {
       if(it.isFile()){
-        let wayFrom = path.join(__dirname, 'files', it.name);
-        let wayTo = path.join(__dirname, 'files-copy', it.name);
+        let wayFrom = path.join(srcPath, it.name);
+        let wayTo = path.join(copyPath, it.name);
         fs.copyFile(wayFrom, wayTo, err => {
           if (err) {
             console.log(err.message);
