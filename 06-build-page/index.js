@@ -13,23 +13,22 @@ fs.mkdir(distPath, {recursive:true}, err => err);
 fs.rm(assetsOutPath, {recursive:true}, err => err);
 
 async function writeHtml() {
-  fs.readFile(path.join(__dirname, 'template.html'), (err, data) => {
+  fs.readFile(path.join(__dirname, 'template.html'), {encoding: 'utf-8'}, (err, data) => {
     if (err) console.log(err.message);
-    let template = data.toString();
     (async () => {
       const files = await readdir(htmlComponentsPath, { withFileTypes: true });
       files.forEach(file => {
         if (file.isFile() && path.extname(file.name) === '.html') {
           let fileName = file.name.split('.')[0];
           let stream = fs.createReadStream(path.join(htmlComponentsPath, file.name));
-          let data = '';
-          stream.on('data', chunk => data += chunk);
+          let part = '';
+          stream.on('data', chunk => part += chunk);
           stream.on('end', () => {
             if (fileName) {
-              template = template.replace(`{{${fileName}}}`, data);
+              data = data.replace(`{{${fileName}}}`, part);
             }
             let res = fs.createWriteStream(htmlPath);
-            res.write(template);
+            res.write(data);
           });
         }
       });
