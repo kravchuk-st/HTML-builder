@@ -32,7 +32,6 @@ async function addFiles() {
             console.log(err.message);
           }
         });
-        console.log(wayFrom);
       }
     });
   } catch (err) {
