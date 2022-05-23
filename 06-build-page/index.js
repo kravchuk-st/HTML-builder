@@ -1,16 +1,29 @@
 const fs = require('fs');
 const path = require('path');
-const distPath = path.join(__dirname, 'project-dist');
 const htmlPath = path.join(__dirname, 'project-dist', 'index.html');
 const htmlComponentsPath = path.join(__dirname, 'components');
 const cssPath = path.join(__dirname, 'project-dist', 'style.css');
 const assetsPath = path.join(__dirname, 'assets');
-const assetsOutPath = path.join(distPath, 'assets');
-const resCss = fs.createWriteStream(cssPath);
+const assetsOutPath = path.join(__dirname, 'project-dist', 'assets');
 const { readdir } = require('fs/promises');
 
-fs.mkdir(distPath, {recursive:true}, err => err);
-fs.rm(assetsOutPath, {recursive:true}, err => err);
+function clearAssets() {
+  return new Promise((resolve, reject) => {
+    fs.rm(path.join(__dirname, 'project-dist'), { recursive: true, force: true }, err => {
+      if (!err) {
+        resolve(true);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+async function createDist() {
+  return fs.mkdir(path.join(__dirname, 'project-dist'), {recursive:true}, err => {
+    if (err) console.log(err.message);
+  });
+}
 
 async function writeHtml() {
   fs.readFile(path.join(__dirname, 'template.html'), {encoding: 'utf-8'}, (err, data) => {
@@ -38,6 +51,7 @@ async function writeHtml() {
 
 async function writeStyles() {
   try {
+    const resCss = fs.createWriteStream(cssPath);
     const files = await readdir(path.join(__dirname, 'styles'), { withFileTypes: true });
     files.forEach(it => {
       if(it.isFile() && path.extname(it.name) === '.css'){
@@ -77,6 +91,10 @@ async function copyAssets(wayFrom, wayTo) {
   }
 }
 
-writeHtml();
-writeStyles();
-copyAssets(assetsPath, assetsOutPath);
+(async () => {
+  await clearAssets();
+  await createDist();
+  await writeHtml();
+  await writeStyles();
+  await copyAssets(assetsPath, assetsOutPath);
+})();
